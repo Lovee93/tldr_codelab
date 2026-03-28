@@ -257,10 +257,7 @@ Once you have enabled the APIs, you can now deploy using:
 gcloud run deploy news-curator --source . --region us-central1 --allow-unauthenticated
 ```
 
-- Press enter if the source code location is your `news-curator` folder.
-- Service name: `news-curator`
-- Region: 34 for `us-central1`
-- Allow unauthenticated invocations for now - **Don't do this in Production**
+**Note:** We are allowing unauthenticated invocations for now - **Don't do this in Production**.
 
 It will use Buildpack to create a container image of your application and then push it to the registry.  Next, it will create and manage container instances by pulling this image from the registry.
 

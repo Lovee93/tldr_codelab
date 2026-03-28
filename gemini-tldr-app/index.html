@@ -237,12 +237,7 @@ cloudbuild.googleapis.com
 <p>Once you have enabled the APIs, you can now deploy using:</p>
 <pre><code>gcloud run deploy news-curator --source . --region us-central1 --allow-unauthenticated
 </code></pre>
-<ul>
-<li>Press enter if the source code location is your <code>news-curator</code> folder.</li>
-<li>Service name: <code>news-curator</code></li>
-<li>Region: 34 for <code>us-central1</code></li>
-<li>Allow unauthenticated invocations for now - <strong>Don&#39;t do this in Production</strong></li>
-</ul>
+<p><strong>Note:</strong> We are allowing unauthenticated invocations for now - <strong>Don&#39;t do this in Production</strong>.</p>
 <p>It will use Buildpack to create a container image of your application and then push it to the registry.  Next, it will create and manage container instances by pulling this image from the registry.</p>
 <p>Once done, you should be able to see a service URL, try it:</p>
 <p><code>https://news-curator-123456789.us-central1.run.app/news</code></p>
