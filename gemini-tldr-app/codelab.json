@@ -1,0 +1,26 @@
+{
+  "environment": "web",
+  "format": "html",
+  "prefix": "https://storage.googleapis.com",
+  "mainga": "UA-49880327-14",
+  "updated": "2026-03-28T16:51:24+11:00",
+  "id": "gemini-tldr-app",
+  "duration": 80,
+  "title": "Build Your Own Tech News TL;DR App",
+  "authors": "Lovee Jain",
+  "summary": "Build Your Own Tech News TL;DR App: Grounding, Cloud Run \u0026 No-Code Email Automation",
+  "source": "tldr.md",
+  "theme": "",
+  "status": [
+    "published"
+  ],
+  "category": null,
+  "tags": [
+    "gcp",
+    "gemini",
+    "generativeai",
+    "workshop"
+  ],
+  "feedback": "https://zarin.io",
+  "url": "gemini-tldr-app"
+}

@@ -1,0 +1,304 @@
+
+<!doctype html>
+
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+  <meta name="theme-color" content="#4F7DC9">
+  <meta charset="UTF-8">
+  <title>Build Your Own Tech News TL;DR App</title>
+  <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Source+Code+Pro:400|Roboto:400,300,400italic,500,700|Roboto+Mono">
+  <link rel="stylesheet" href="//fonts.googleapis.com/icon?family=Material+Icons">
+  <link rel="stylesheet" href="https://storage.googleapis.com/claat-public/codelab-elements.css">
+  <style>
+    .success {
+      color: #1e8e3e;
+    }
+    .error {
+      color: red;
+    }
+  </style>
+</head>
+<body>
+  <google-codelab-analytics gaid="UA-49880327-14" ga4id=""></google-codelab-analytics>
+  <google-codelab codelab-gaid=""
+                  codelab-ga4id=""
+                  id="gemini-tldr-app"
+                  title="Build Your Own Tech News TL;DR App"
+                  environment="web"
+                  feedback-link="https://zarin.io">
+    
+      <google-codelab-step label="Overview" duration="5">
+        <p>In this codelab, you&#39;ll learn how to build your own personalised &#34;Too Long; Didn&#39;t Read&#34; (TL;DR) tech news application. We&#39;ll leverage the power of the Gemini API and the Google Search Retrieval Tool to create a backend API that fetches and summarises the latest tech news based on your interests. Once our API is ready, we&#39;ll deploy it effortlessly on Google Cloud Run. Finally, we&#39;ll harness the simplicity of Google Cloud&#39;s Application Integration to create a low-code/no-code automation that calls our API and delivers the curated news digest directly to your email inbox. Get ready to streamline your news consumption!</p>
+<h2 class="checklist" is-upgraded>What You&#39;ll Learn</h2>
+<ul class="checklist">
+<li>using AI Studio and Gemini API, compare feature</li>
+<li>grounding with Google search to get real-time information from Google search results</li>
+<li>creating an Express API and deploying it on Cloud Run</li>
+<li>low-code/no-code automation using Google Application Integration</li>
+</ul>
+<h2 is-upgraded>Evolving Space</h2>
+<p>Just want to highlight the fact that this is an evolving space and hence there are new changes everyday. When I wrote this codelab, I used Gemini 1.5 Flash model with <a href="https://www.npmjs.com/package/@google/generative-ai" target="_blank">Gemini SDK</a> which is now deprecated, and therefore, I have updated the code with latest models and the new <a href="https://www.npmjs.com/package/@google/genai" target="_blank">GenAI SDK</a>, however, have left some old screenshots from AI Studio, for you to understand and compare.</p>
+<ul>
+<li><a href="https://github.com/Lovee93/news-curator" target="_blank">Latest code for this lab uses GenAI SDK</a></li>
+<li>Checkout <code>vertex-implementation</code> <a href="https://github.com/Lovee93/news-curator/tree/vertex-implementation" target="_blank">branch</a> for vertex-ai implementation of the codelab</li>
+<li>Checkout <code>2.0-plus-models</code> <a href="https://github.com/Lovee93/news-curator/tree/2.0-plus-models" target="_blank">branch</a> for playing around with 2.0+ models with Gemini SDK</li>
+<li>Checkout <code>use-gemini-sdk</code> <a href="https://github.com/Lovee93/news-curator/tree/use-gemini-sdk" target="_blank">branch</a> for original old code with Gemini SDK and Gemini 1.5 Flash model</li>
+</ul>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Getting started with AI Studio" duration="10">
+        <ol type="1">
+<li>Let&#39;s navigate to: <a href="https://aistudio.google.com/" target="_blank">AI Studio</a> and get familiarised with all the features available:</li>
+</ol>
+<p class="image-container"><img alt="AI Studio" src="img/39941f0af97376dd.png"></p>
+<p><strong>Please note:</strong> We will be using <strong>Gemini 2.5 Flash Preview</strong> model all across our workshop.</p>
+<ol type="1" start="2">
+<li>Next, let&#39;s enter into Compare Mode and turn on Grounding with Google Search on the right side. And ask it something current and see the difference!</li>
+</ol>
+<p class="image-container"><img alt="AI Studio compare with grounding" src="img/39941f0af97376dd.png"></p>
+<ol type="1" start="3">
+<li>Let&#39;s close this and construct a new prompt for our TL;DR app! We will make use of System Instructions:</li>
+</ol>
+<p><strong>You are an expert news reporter who curates content and provides a brief to the point response in Australian slang. You do not give long paragraphs but just some bullet points with the summary.</strong></p>
+<ol type="1" start="4">
+<li>We can then use the prompt to request the type/category of news we are interested in. I&#39;ll use tech!</li>
+</ol>
+<p class="image-container"><img alt="AI Studio final prompt" src="img/fb1242a03953d762.png"></p>
+<ol type="1" start="5">
+<li>I&#39;m happy with the result so next I would like to get the code for this. Go to Get code and select Node.js and turn off Prompt history. What we are interested in is the highlighted parts of code below.</li>
+</ol>
+<p class="image-container"><img alt="Getting code from AI Studio" src="img/5ad80d54d8502b20.png"></p>
+<ol type="1" start="6">
+<li>Copy the code and paste it in an editor/notepad, we will use bits from it in the next steps.</li>
+</ol>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Create a basic Express API" duration="15">
+        <ol type="1">
+<li>Let&#39;s go to the <a href="https://console.cloud.google.com/" target="_blank">cloud console</a>. I imagine by this step, you already have redeemed your cloud credits, created a project and are in that project on the console.</li>
+</ol>
+<p>Click on the Activate Cloud Shell button on top right and authorise the cloud shell.</p>
+<p class="image-container"><img alt="Activate cloud shell" src="img/38848cfcdd1eaad3.png"></p>
+<ol type="1" start="2">
+<li>Once active, let&#39;s create a new directory called <em>news-curator</em> and initialise a node app by running following commands:</li>
+</ol>
+<pre><code>mkdir news-curator
+cd news-curator
+npm init -y
+touch index.js
+</code></pre>
+<ol type="1" start="3">
+<li>Once done, click on Open Editor button to start editing in a proper IDE.</li>
+<li>Let&#39;s set up a basic Express API endpoint by pasting in the following code in <code>index.js</code>:</li>
+</ol>
+<pre><code>import express from &#34;express&#34;;
+import dotenv from &#34;dotenv&#34;;
+
+const app = express();
+app.use(express.json());
+dotenv.config();
+const port = process.env.PORT || 3000;
+
+app.listen(port, async () =&gt; {
+	console.log(`Server is running on port ${port}`);
+});
+
+app.get(&#34;/&#34;, (req, res) =&gt; {
+	res.send(&#34;Hello World&#34;);
+});
+</code></pre>
+<ol type="1" start="5">
+<li>Next, create a <code>.env</code> file with the following variable:</li>
+</ol>
+<pre><code>PORT = 8080
+</code></pre>
+<ol type="1" start="6">
+<li>Next, update <code>package.json</code> by adding following scripts and also updating the type to <code>module</code> to support import statements.</li>
+</ol>
+<pre><code>&#34;scripts&#34;: {
+	&#34;start&#34;: &#34;node index.js&#34;,
+	&#34;dev&#34;: &#34;nodemon index.js&#34;,
+	&#34;test&#34;: &#34;echo \&#34;Error: no test specified\&#34; &amp;&amp; exit 1&#34;
+},
+&#34;type&#34;: &#34;module&#34;,
+</code></pre>
+<ol type="1" start="7">
+<li>Let&#39;s Open Terminal and install the packages we need:</li>
+</ol>
+<pre><code>npm install express dotenv nodemon
+</code></pre>
+<p>This is what your <code>package.json</code> should look like after installing the packages:</p>
+<pre><code>{
+	&#34;name&#34;: &#34;news-curator&#34;,
+	&#34;version&#34;: &#34;1.0.0&#34;,
+	&#34;description&#34;: &#34;&#34;,
+	&#34;main&#34;: &#34;index.js&#34;,
+	&#34;type&#34;: &#34;module&#34;,
+	&#34;scripts&#34;: {
+		&#34;start&#34;: &#34;node index.js&#34;,
+		&#34;dev&#34;: &#34;nodemon index.js&#34;,
+		&#34;test&#34;: &#34;echo \&#34;Error: no test specified\&#34; &amp;&amp; exit 1&#34;
+	},
+	&#34;keywords&#34;: [],
+	&#34;author&#34;: &#34;&#34;,
+	&#34;license&#34;: &#34;ISC&#34;,
+	&#34;dependencies&#34;: {
+		&#34;dotenv&#34;: &#34;^16.4.7&#34;,
+		&#34;express&#34;: &#34;^4.21.2&#34;,
+		&#34;nodemon&#34;: &#34;^3.1.9&#34;
+	}
+}
+</code></pre>
+<ol type="1" start="8">
+<li>Let&#39;s now run our app:</li>
+</ol>
+<pre><code>npm run dev
+</code></pre>
+<p>Your application will now be running on port 8080 and you can view it by clicking on the Web Preview button, which will take you to a new page that will say <em>Hello World</em>.</p>
+<p>Your basic express API is now initialised and working!</p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Add the Gemini magic!" duration="20">
+        <p>In this step we will be adding Gemini with Google search grouding bits of code and create a new API endpoint.</p>
+<ol type="1">
+<li>Before we do that, we first need to grab the Gemini API key from the AI studio. Go to Get API Key and then paste it in your <code>.env</code> file.</li>
+</ol>
+<pre><code>GEMINI_API_KEY = //YOUR_API_KEY
+</code></pre>
+<ol type="1" start="2">
+<li>Next, we will pick and choose from the code we got from AI Studio in the previous step. If you don&#39;t have it, you can grab it from your prompt &gt; Get code.</li>
+<li>We will be updating our <code>index.js</code> file. So let&#39;s first start by importing the GenAI package:</li>
+</ol>
+<pre><code>import { GoogleGenAI } from &#34;@google/genai&#34;;
+</code></pre>
+<ol type="1" start="4">
+<li>Next, we are going to initialise the Gemini API client.</li>
+</ol>
+<pre><code>const apiKey = process.env.GEMINI_API_KEY;
+const geminiAI = new GoogleGenAI({apiKey});
+</code></pre>
+<ol type="1" start="5">
+<li>Next, create a new endpoint <code>/news</code> where you pass in the prompt to get the <em>latest tech news</em> to your model. First you initialise a chat and then send the prompt as message to your chat and wait for the result to come back:</li>
+</ol>
+<pre><code>app.get(&#34;/news&#34;, async (req, res) =&gt; {
+  const prompt = &#34;latest tech news in last 24 hours&#34;
+  // Initialize the chat with the model and tools
+  const chat = await geminiAI.chats.create({
+    model: &#34;gemini-2.5-flash&#34;,
+    config: {
+      tools: [
+        {
+          googleSearch: {}
+        }
+      ],
+      systemInstruction: &#34;You are an expert news reporter who curates content and provides a brief to the point response in Australian slang. You do not give long paragraphs but just some bullet points with the summary.&#34;
+    }
+  })
+  // Send the prompt and wait for the result
+  const result = await chat.sendMessage({&#34;message&#34;: prompt})
+  res.send(result.text);
+})
+
+</code></pre>
+<p>Don&#39;t worry, if you missed the above steps, you can find the <code>index.js</code> and whole code on <a href="https://github.com/Lovee93/news-curator" target="_blank">Github</a>.</p>
+<ol type="1" start="7">
+<li>Let&#39;s go back to the terminal and install the package:</li>
+</ol>
+<pre><code>npm install @google/genai
+</code></pre>
+<ol type="1" start="8">
+<li>And then run our application:</li>
+</ol>
+<pre><code>npm run dev
+</code></pre>
+<p>Browse to the Web Preview and update the url to add <code>/news</code> and you will now get some curated news items!</p>
+<p class="image-container"><img alt="API output when running on shell" src="img/16c64b4d43c3be4b.png"></p>
+<p>Tada! 🎉 Your API is ready!</p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Deploy your app" duration="10">
+        <p>It&#39;s time to deploy our application to Cloud Run!</p>
+<p>Go to terminal and enter the following command to enable the Cloud Build and Run APIs first:</p>
+<pre><code>gcloud services enable run.googleapis.com \
+cloudbuild.googleapis.com
+</code></pre>
+<p>[OPTIONAL] If you get an error and it needs you to authorise first, just run:</p>
+<pre><code>gcloud auth login
+</code></pre>
+<p>Once you have enabled the APIs, you can now deploy using:</p>
+<pre><code>gcloud run deploy news-curator --source . --region us-central1 --allow-unauthenticated
+</code></pre>
+<ul>
+<li>Press enter if the source code location is your <code>news-curator</code> folder.</li>
+<li>Service name: <code>news-curator</code></li>
+<li>Region: 34 for <code>us-central1</code></li>
+<li>Allow unauthenticated invocations for now - <strong>Don&#39;t do this in Production</strong></li>
+</ul>
+<p>It will use Buildpack to create a container image of your application and then push it to the registry.  Next, it will create and manage container instances by pulling this image from the registry.</p>
+<p>Once done, you should be able to see a service URL, try it:</p>
+<p><code>https://news-curator-123456789.us-central1.run.app/news</code></p>
+<p>Congratulations, you have done the hard part! It&#39;s time to do some automation!</p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Send curated news to your email" duration="15">
+        <p>In your <a href="https://console.cloud.google.com/" target="_blank">Cloud Console</a>, search for application integration and create a new integration.</p>
+<ol type="1">
+<li>Give it a name, <code>tldr</code>.</li>
+<li>Description: <code>Sends curated tech news to me!</code></li>
+<li>Once created, you will see a blank canvas.</li>
+<li>Click on Trigger and select API Trigger.</li>
+<li>Configure API Trigger with the default settings.</li>
+<li>Next, add a Task, select Call Rest Endpoint and configure it with following settings: a. Authentication: Run as service account b. Endpoint base URL: <a href="https://news-curator-123456789.us-central1.run.app/news" target="_blank">https://news-curator-123456789.us-central1.run.app/news</a></li>
+<li>Add another Task, search for Send Email and configure it with following settings: a. Add your email in recipient b. Add a subject, e.g. <em>TL;DR</em> c. And in the body try selecting Variable, you should be able to find <code>responseBody</code> as an autogenerated variable from Call Rest Endpoint step.</li>
+</ol>
+<p class="image-container"><img alt="Use autogenerated variable in Email body" src="img/e7a5688667e1ae4e.png"></p>
+<ol type="1" start="8">
+<li>Don&#39;t forget to connect your steps and then publish! It can autogenerate the description for you - Save and Publish 🚀</li>
+</ol>
+<p class="image-container"><img alt="Final workflow" src="img/9c7915ff17a45585.png"></p>
+<ol type="1" start="9">
+<li>Let&#39;s test it!!! Don&#39;t forget to View logs:</li>
+</ol>
+<p class="image-container"><img alt="Workflow logs" src="img/398d17d73c66eaf7.png"></p>
+<ol type="1" start="10">
+<li>You should have got an email like the following. It can sometimes end up in Spam, so make sure you check it!</li>
+</ol>
+<p class="image-container"><img alt="Final email" src="img/e7e8c2e04c13d665.png"></p>
+<p>Congratulations, you have now created your personal TL;DR app that runs whenever you call it! 🎉</p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="What&#39;s next?" duration="5">
+        <p>Well done on creating your own TL;DR app, but isn&#39;t it missing something?</p>
+<p>While it is working every time you are triggering it manually, what you want is to get your news bytes daily. And for that you need to update your API trigger to a Schedule Trigger!</p>
+<p>Setting up Schedule Trigger is easy, all you need to do is provide the time of the day and frequency. Now you can do that in the basic tab or go to advanced and provide a cron time in the configuration panel. <strong>However, what you want to be careful about is the difference in timezone.</strong><em>All time settings are GMT 08:00 - America/Los Angeles.</em></p>
+<p>Now, I am not an expert at it, so I ask Gemini to give me the correct time conversion value and it works! I get my daily updates at 8 pm everyday 😉</p>
+<p>Are you ready to set up yours?</p>
+<h2 is-upgraded>Resources:</h2>
+<p>Github Respository: <a href="https://github.com/Lovee93/news-curator" target="_blank">https://github.com/Lovee93/news-curator</a></p>
+
+
+      </google-codelab-step>
+    
+  </google-codelab>
+
+  <script src="https://storage.googleapis.com/claat-public/native-shim.js"></script>
+  <script src="https://storage.googleapis.com/claat-public/custom-elements.min.js"></script>
+  <script src="https://storage.googleapis.com/claat-public/prettify.js"></script>
+  <script src="https://storage.googleapis.com/claat-public/codelab-elements.js"></script>
+  <script src="//support.google.com/inapp/api.js"></script>
+
+</body>
+</html>
